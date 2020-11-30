@@ -9,6 +9,7 @@ import {
   selectResults,
   sortByValue,
   filterByValue,
+  goToPage,
 } from "./userDataSlice";
 
 const Table = styled.table`
@@ -45,6 +46,25 @@ const ColumnHeader = styled.td`
   }
 `;
 
+const PageNum = styled.span`
+  padding: 1px;
+  margin-right: 5px;
+  background-color: ${(props) => (props.selected ? "blue" : "white")};
+  color: ${(props) => (props.selected ? "white" : "black")};
+  border: 1px solid black;
+  height: 30px;
+  width: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: blue;
+    color: white;
+  }
+`;
+
 const getRows = (items) => {
   return items.map((item, index) => (
     <TableRow key={`row-${index}`}>
@@ -62,6 +82,8 @@ const getRows = (items) => {
 export const UserTable = (props) => {
   const dispatch = useDispatch();
   const dataStatus = useSelector((state) => state.userData.status);
+  const pages = useSelector((state) => state.userData.totalPages);
+  const currentPage = useSelector((state) => state.userData.currentPage);
   const results = useSelector(selectResults);
   const users = useSelector(selectUsers);
   const [currentFilter, setCurrentFilter] = useState();
@@ -83,8 +105,22 @@ export const UserTable = (props) => {
     }
   }, [dataStatus, dispatch]);
 
+  const pageItems = [...Array(pages)].map((item, index) => {
+    console.log(pages);
+
+    return (
+      <PageNum
+        selected={index + 1 === currentPage}
+        onClick={() => dispatch(goToPage(index + 1))}
+      >
+        {index + 1}
+      </PageNum>
+    );
+  });
+
   return (
     <>
+      <div>{pageItems}</div>
       <input onChange={(e) => filterInput(e)} />
       <Table>
         <thead>
