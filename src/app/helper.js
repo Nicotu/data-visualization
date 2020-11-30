@@ -3,7 +3,7 @@ export const formatDate = (date) => {
   return new Date(parts[2], parts[1] - 1, parts[0]);
 };
 
-export const sortCollection = (data, propertyName, format, direction) => {
+export const sortCollection = (data, propertyName, format) => {
   return new Promise((res) => {
     let sortedData;
 
@@ -44,5 +44,28 @@ export const sortCollection = (data, propertyName, format, direction) => {
     }
 
     res(sortedData);
+  });
+};
+
+export const filterCollection = (data, value) => {
+  return new Promise((res) => {
+    let filteredData;
+
+    if (value.length === 0) {
+      filteredData = data;
+    }
+
+    if (value)
+      filteredData = [...data].filter((item) => {
+        return (
+          `${item.first_name}`
+            .replace("null", "")
+            .toLowerCase()
+            .includes(value) ||
+          `${item.last_name}`.replace("null", "").toLowerCase().includes(value)
+        );
+      });
+
+    res(filteredData);
   });
 };

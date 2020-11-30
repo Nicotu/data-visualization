@@ -4,7 +4,7 @@ import {
   createAsyncThunk,
   current,
 } from "@reduxjs/toolkit";
-import { sortCollection } from "../../app/helper";
+import { sortCollection, filterCollection } from "../../app/helper";
 
 export const fetchUsers = createAsyncThunk("users/fetchusers", async () => {
   const response = await fetch("MOCK_DATA.json", {
@@ -23,14 +23,16 @@ export const userDataSlice = createSlice({
   name: "userData",
 
   initialState: {
+    results: [],
     users: [],
     status: "idle",
     error: null,
   },
 
   reducers: {
-    sortList: (state, action) => {
-      return { ...state, users: action.payload };
+    updateList: (state, action) => {
+      console.log(action);
+      return { ...state, results: action.payload };
     },
   },
 
@@ -51,16 +53,29 @@ export const userDataSlice = createSlice({
   },
 });
 
-export const { sortByDate, sortList } = userDataSlice.actions;
-export const selectUsers = (state) => state.userData.users;
-
 export const sortByValue = (itemKey, format) => (dispatch, getState) => {
   const userList = getState().userData.users;
 
-  sortCollection(userList, itemKey, format).then((results) => {
-    console.log(dispatch);
-    dispatch(sortList(results));
+  sortCollection(userList, itemKey, format).then((response) => {
+    dispatch(updateList(response));
   });
 };
+
+export const filterByValue = (inputValue) => (dispatch, getState) => {
+  const userList = getState().userData.users;
+
+  if (inputValue.length <= 0) {
+    dispatch(updateList([]));
+    return;
+  }
+
+  filterCollection(userList, inputValue).then((response) => {
+    dispatch(updateList(response));
+  });
+};
+
+export const { updateList } = userDataSlice.actions;
+export const selectUsers = (state) => state.userData.users;
+export const selectResults = (state) => state.userData.results;
 
 export default userDataSlice.reducer;

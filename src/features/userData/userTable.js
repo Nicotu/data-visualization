@@ -1,8 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import styled from "styled-components/macro";
+import { setTimeout } from "timers";
 
-import { fetchUsers, selectUsers, sortByValue } from "./userDataSlice";
+import {
+  fetchUsers,
+  selectUsers,
+  selectResults,
+  sortByValue,
+  filterByValue,
+} from "./userDataSlice";
 
 const Table = styled.table`
   width: 90%;
@@ -38,20 +45,8 @@ const ColumnHeader = styled.td`
   }
 `;
 
-export const UserTable = (props) => {
-  const dispatch = useDispatch();
-  const dataStatus = useSelector((state) => state.userData.status);
-  const users = useSelector(selectUsers);
-
-  useEffect(() => {
-    console.log(dataStatus);
-
-    if (dataStatus === "idle") {
-      dispatch(fetchUsers());
-    }
-  }, [dataStatus, dispatch]);
-
-  const rows = users.map((item, index) => (
+const getRows = (items) => {
+  return items.map((item, index) => (
     <TableRow key={`row-${index}`}>
       <TableData>{item.first_name}</TableData>
       <TableData>{item.last_name}</TableData>
@@ -62,44 +57,82 @@ export const UserTable = (props) => {
       <TableData center>{item.years_of_experience}</TableData>
     </TableRow>
   ));
+};
+
+export const UserTable = (props) => {
+  const dispatch = useDispatch();
+  const dataStatus = useSelector((state) => state.userData.status);
+  const results = useSelector(selectResults);
+  const users = useSelector(selectUsers);
+  const [currentFilter, setCurrentFilter] = useState();
+
+  const dataRows = getRows(users);
+  const resultsRows = getRows(results);
+
+  const filterInput = (e) => {
+    setTimeout(() => {
+      const input = e.target.value;
+      dispatch(filterByValue(input));
+      setCurrentFilter(e.target.value);
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (dataStatus === "idle") {
+      dispatch(fetchUsers());
+    }
+  }, [dataStatus, dispatch]);
 
   return (
-    <Table>
-      <thead>
-        <TableRow>
-          <ColumnHeader onClick={() => dispatch(sortByValue("first_name"))}>
-            First Name
-          </ColumnHeader>
+    <>
+      <input onChange={(e) => filterInput(e)} />
+      <Table>
+        <thead>
+          <TableRow>
+            <ColumnHeader onClick={() => dispatch(sortByValue("first_name"))}>
+              First Name
+            </ColumnHeader>
 
-          <ColumnHeader onClick={() => dispatch(sortByValue("last_name"))}>
-            Last Name
-          </ColumnHeader>
+            <ColumnHeader onClick={() => dispatch(sortByValue("last_name"))}>
+              Last Name
+            </ColumnHeader>
 
-          <ColumnHeader>Email</ColumnHeader>
+            <ColumnHeader>Email</ColumnHeader>
 
-          <ColumnHeader
-            onClick={() => dispatch(sortByValue("date_of_birth", "date"))}
-          >
-            DOB
-          </ColumnHeader>
+            <ColumnHeader
+              onClick={() => dispatch(sortByValue("date_of_birth", "date"))}
+            >
+              DOB
+            </ColumnHeader>
 
-          <ColumnHeader onClick={() => dispatch(sortByValue("industry"))}>
-            Industry
-          </ColumnHeader>
+            <ColumnHeader onClick={() => dispatch(sortByValue("industry"))}>
+              Industry
+            </ColumnHeader>
 
-          <ColumnHeader onClick={() => dispatch(sortByValue("salary"))}>
-            Salary
-          </ColumnHeader>
+            <ColumnHeader onClick={() => dispatch(sortByValue("salary"))}>
+              Salary
+            </ColumnHeader>
 
-          <ColumnHeader
-            cellWidth="100px"
-            onClick={() => dispatch(sortByValue("first_name"))}
-          >
-            Years of experience
-          </ColumnHeader>
-        </TableRow>
-      </thead>
-      <tbody>{rows}</tbody>
-    </Table>
+            <ColumnHeader
+              cellWidth="100px"
+              onClick={() => dispatch(sortByValue("first_name"))}
+            >
+              Years of experience
+            </ColumnHeader>
+          </TableRow>
+        </thead>
+
+        {results?.length > 0 && (
+          <>
+            <p>Results for: {currentFilter}</p>
+            <tbody>{resultsRows}</tbody>
+          </>
+        )}
+
+        {results?.length <= 0 && !currentFilter?.length && (
+          <tbody>{dataRows}</tbody>
+        )}
+      </Table>
+    </>
   );
 };
