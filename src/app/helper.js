@@ -29,8 +29,6 @@ export const sortCollection = (data, propertyName, format) => {
         const valueA = formatDate(`${a.date_of_birth}`.replace("null", ""));
         const valueB = formatDate(`${b.date_of_birth}`.replace("null", ""));
 
-        console.log(valueB, valueA);
-
         if (valueA < valueB) {
           return -1;
         }

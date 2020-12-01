@@ -5,16 +5,15 @@ import { setTimeout } from "timers";
 
 import {
   fetchUsers,
-  selectUsers,
   selectResults,
   sortByValue,
   filterByValue,
   goToPage,
+  changeLimit,
 } from "./userDataSlice";
 
 const Table = styled.table`
-  width: 90%;
-  margin: 0 auto;
+  width: 100%;
 `;
 
 const TableRow = styled.tr`
@@ -46,10 +45,20 @@ const ColumnHeader = styled.td`
   }
 `;
 
-const PageNum = styled.span`
+const PaginationBar = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+const PageList = styled.ul`
+  max-width: 70%;
+`;
+
+const PageNum = styled.li`
   padding: 1px;
   margin-right: 5px;
-  background-color: ${(props) => (props.selected ? "blue" : "white")};
+  background-color: ${(props) => (props.selected ? "#232856" : "white")};
   color: ${(props) => (props.selected ? "white" : "black")};
   border: 1px solid black;
   height: 30px;
@@ -58,10 +67,48 @@ const PageNum = styled.span`
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  margin-bottom: 10px;
 
   &:hover {
-    background-color: blue;
+    background-color: #232856;
     color: white;
+  }
+`;
+
+const PageLimit = styled.div`
+  margin-left: auto;
+
+  span {
+    margin-right: 10px;
+  }
+`;
+
+const SearchTerm = styled.span`
+  font-weight: 500;
+  display: inline-block;
+  margin-left: 5px;
+`;
+
+const LimitButton = styled.button`
+  background-color: ${(props) => (props.selected ? "#232856" : "white")};
+  color: ${(props) => (props.selected ? "white" : "black")};
+  border: 1px solid black;
+  height: 30px;
+  width: 30px;
+  margin-left: 10px;
+  cursor: pointer;
+`;
+
+const SearchBar = styled.div`
+  margin-bottom: 20px;
+
+  p {
+    margin-bottom: 5px;
+  }
+
+  input {
+    height: 30px;
+    padding: 0 10px;
   }
 `;
 
@@ -84,11 +131,10 @@ export const UserTable = (props) => {
   const dataStatus = useSelector((state) => state.userData.status);
   const pages = useSelector((state) => state.userData.totalPages);
   const currentPage = useSelector((state) => state.userData.currentPage);
+  const currentLimit = useSelector((state) => state.userData.pageLimit);
   const results = useSelector(selectResults);
-  const users = useSelector(selectUsers);
   const [currentFilter, setCurrentFilter] = useState();
 
-  const dataRows = getRows(users);
   const resultsRows = getRows(results);
 
   const filterInput = (e) => {
@@ -106,8 +152,6 @@ export const UserTable = (props) => {
   }, [dataStatus, dispatch]);
 
   const pageItems = [...Array(pages)].map((item, index) => {
-    console.log(pages);
-
     return (
       <PageNum
         selected={index + 1 === currentPage}
@@ -120,8 +164,40 @@ export const UserTable = (props) => {
 
   return (
     <>
-      <div>{pageItems}</div>
-      <input onChange={(e) => filterInput(e)} />
+      <SearchBar>
+        <p>
+          Search:
+          <SearchTerm>
+            {currentFilter?.length > 0 ? currentFilter : ""}
+          </SearchTerm>
+        </p>
+        <input
+          type="text"
+          name="filterInput"
+          onChange={(e) => filterInput(e)}
+        />
+      </SearchBar>
+
+      <PaginationBar>
+        <PageList>{pageItems}</PageList>
+
+        <PageLimit>
+          <span>display:</span>
+          <LimitButton
+            selected={currentLimit === 20}
+            onClick={() => dispatch(changeLimit(20))}
+          >
+            20
+          </LimitButton>
+          <LimitButton
+            selected={currentLimit === 10}
+            onClick={() => dispatch(changeLimit(10))}
+          >
+            10
+          </LimitButton>
+        </PageLimit>
+      </PaginationBar>
+
       <Table>
         <thead>
           <TableRow>
@@ -158,16 +234,7 @@ export const UserTable = (props) => {
           </TableRow>
         </thead>
 
-        {results?.length > 0 && (
-          <>
-            <p>Results for: {currentFilter}</p>
-            <tbody>{resultsRows}</tbody>
-          </>
-        )}
-
-        {results?.length <= 0 && !currentFilter?.length && (
-          <tbody>{dataRows}</tbody>
-        )}
+        <tbody>{resultsRows}</tbody>
       </Table>
     </>
   );

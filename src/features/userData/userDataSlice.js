@@ -29,12 +29,10 @@ export const userDataSlice = createSlice({
 
   reducers: {
     updateList: (state, action) => {
-      console.log(action);
       return { ...state, results: action.payload };
     },
 
     sortList: (state, action) => {
-      console.log(action);
       return { ...state, users: action.payload };
     },
 
@@ -45,6 +43,20 @@ export const userDataSlice = createSlice({
       const userGroup = state.users.slice(pageStart, pageEnd);
 
       return { ...state, results: userGroup, currentPage: action.payload };
+    },
+
+    updatePagination: (state, action) => {
+      const total = Math.ceil(action.payload / state.pageLimit);
+
+      state.totalPages = total;
+    },
+
+    updateLimit: (state, action) => {
+      state.pageLimit = action.payload;
+    },
+
+    updateCurrentPage: (state, action) => {
+      state.currentPage = action.payload;
     },
   },
 
@@ -83,19 +95,39 @@ export const sortByValue = (itemKey, format) => (dispatch, getState) => {
 
 export const filterByValue = (inputValue) => (dispatch, getState) => {
   const userList = getState().userData.users;
+  const pageEnd =
+    getState().userData.currentPage * getState().userData.pageLimit;
+  const pageStart = pageEnd - getState().userData.pageLimit;
 
   if (inputValue.length <= 0) {
-    dispatch(updateList([]));
+    dispatch(updateList(userList.slice(pageStart, pageEnd)));
+    dispatch(updatePagination(userList.length));
     return;
   }
 
   filterCollection(userList, inputValue).then((response) => {
-    dispatch(updateList(response));
+    dispatch(updateList(response.slice(pageStart, pageEnd)));
+    dispatch(updatePagination(response.length));
   });
 };
 
-export const { updateList, goToPage, sortList } = userDataSlice.actions;
-export const selectUsers = (state) => state.userData.users;
+export const changeLimit = (newLimit) => (dispatch, getState) => {
+  const userList = getState().userData.users;
+
+  dispatch(updateLimit(newLimit));
+  dispatch(updatePagination(userList.length));
+  dispatch(updateCurrentPage(1));
+  dispatch(updateList(userList.slice(0, newLimit)));
+};
+
+export const {
+  updateList,
+  updateLimit,
+  updateCurrentPage,
+  goToPage,
+  sortList,
+  updatePagination,
+} = userDataSlice.actions;
 export const selectResults = (state) => state.userData.results;
 
 export default userDataSlice.reducer;
