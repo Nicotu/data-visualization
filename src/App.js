@@ -1,7 +1,10 @@
 import React from "react";
 import styled from "styled-components";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+
 import "./App.css";
 import { UserTable } from "./features/userData/userTable";
+import userCharts from "./features/userCharts/userCharts";
 
 const Container = styled.div`
   width: 90%;
@@ -18,10 +21,16 @@ const Container = styled.div`
 
 function App() {
   return (
-    <Container>
-      <h1>Yobota</h1>
-      <UserTable />
-    </Container>
+    <Router>
+      <Container>
+        <h1>Yobota</h1>
+
+        <Switch>
+          <Route exact path="/" component={UserTable} />
+          <Route exact path="/charts" component={userCharts} />
+        </Switch>
+      </Container>
+    </Router>
   );
 }
 

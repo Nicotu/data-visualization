@@ -81,13 +81,16 @@ export const userDataSlice = createSlice({
   },
 });
 
-export const sortByValue = (itemKey, format) => (dispatch, getState) => {
+export const sortByValue = (itemKey, format, direction) => (
+  dispatch,
+  getState
+) => {
   const userList = getState().userData.users;
   const pageEnd =
     getState().userData.currentPage * getState().userData.pageLimit;
   const pageStart = pageEnd - getState().userData.pageLimit;
 
-  sortCollection(userList, itemKey, format).then((response) => {
+  sortCollection(userList, itemKey, format, direction).then((response) => {
     dispatch(sortList(response));
     dispatch(updateList(response.slice(pageStart, pageEnd)));
   });
@@ -128,6 +131,8 @@ export const {
   sortList,
   updatePagination,
 } = userDataSlice.actions;
+
 export const selectResults = (state) => state.userData.results;
+export const selectUsers = (state) => state.userData.users;
 
 export default userDataSlice.reducer;

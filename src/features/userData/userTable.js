@@ -221,13 +221,17 @@ export const UserTable = (props) => {
               Industry
             </ColumnHeader>
 
-            <ColumnHeader onClick={() => dispatch(sortByValue("salary"))}>
+            <ColumnHeader
+              onClick={() => dispatch(sortByValue("salary", "number", "desc"))}
+            >
               Salary
             </ColumnHeader>
 
             <ColumnHeader
               cellWidth="100px"
-              onClick={() => dispatch(sortByValue("first_name"))}
+              onClick={() =>
+                dispatch(sortByValue("years_of_experience", "number", "desc"))
+              }
             >
               Years of experience
             </ColumnHeader>
